@@ -47,16 +47,23 @@ public class TestResourceWatcherRunnable {
     Context.set(Context.standaloneContext());
     // spy the interface instead of WroTestUtils.createResourceMockingLocator() because of mockito bug which was
     // reported on their mailing list.
-    mockLocator = Mockito.spy(new UriLocator() {
-      public InputStream locate(final String uri)
-          throws IOException {
-        return new ByteArrayInputStream(uri.getBytes());
-      }
-      
-      public boolean accept(final String uri) {
-        return true;
-      }
-    });
+    
+    if (true) {
+      // Fails
+      mockLocator = Mockito.spy(WroTestUtils.createResourceMockingLocator());
+    } else {
+      // Works
+      mockLocator = Mockito.spy(new UriLocator() {
+        public InputStream locate(final String uri)
+            throws IOException {
+          return new ByteArrayInputStream(uri.getBytes());
+        }
+        
+        public boolean accept(final String uri) {
+          return true;
+        }
+      });
+    }
     victim = new ResourceWatcherRunnable(createInjector());
   }
 
