@@ -22,8 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ro.isdc.wro.WroRuntimeException;
-import ro.isdc.wro.config.ContextPropagatingCallable;
 import ro.isdc.wro.config.jmx.WroConfiguration;
+import ro.isdc.wro.config.support.ContextPropagatingCallable;
 import ro.isdc.wro.manager.callback.LifecycleCallbackRegistry;
 import ro.isdc.wro.model.group.Inject;
 import ro.isdc.wro.model.resource.Resource;
@@ -219,15 +219,15 @@ public class PreProcessorExecutor {
       final String result = IOUtils.toString(is, config.getEncoding());
       is.close();
       if (StringUtils.isEmpty(result)) {
-        LOG.warn("Empty resource detected: {}", resource.getUri());
+        LOG.debug("Empty resource detected: {}", resource.getUri());
       }
       return result;
     } catch (final IOException e) {
-      LOG.warn("Invalid resource found: {}", resource);
+      LOG.debug("Invalid resource found: {}", resource);
       if (config.isIgnoreMissingResources()) {
         return StringUtils.EMPTY;
       } else {
-        LOG.error("Cannot ignore the missing resource:  " + resource);
+        LOG.error("Cannot ignore missing resource:  {}", resource);
         throw e;
       }
     }

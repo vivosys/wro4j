@@ -45,6 +45,7 @@ import ro.isdc.wro.manager.factory.DefaultWroManagerFactory;
 import ro.isdc.wro.manager.factory.InjectableWroManagerFactoryDecorator;
 import ro.isdc.wro.manager.factory.WroManagerFactory;
 import ro.isdc.wro.model.group.processor.Injector;
+import ro.isdc.wro.model.resource.locator.support.DispatcherStreamLocator;
 import ro.isdc.wro.util.ObjectFactory;
 import ro.isdc.wro.util.WroUtil;
 
@@ -106,7 +107,7 @@ public class WroFilter
   /**
    * @return implementation of {@link ObjectFactory<WroConfiguration>} used to create a {@link WroConfiguration} object.
    */
-  protected ObjectFactory<WroConfiguration> newWroConfigurationFactory() {
+  protected ObjectFactory<WroConfiguration> newWroConfigurationFactory(final FilterConfig filterConfig) {
     return new PropertiesAndFilterConfigWroConfigurationFactory(filterConfig);
   }
   
@@ -136,7 +137,7 @@ public class WroFilter
     // TODO use a named helper
     final WroConfiguration configAttribute = ServletContextAttributeHelper.create(filterConfig).getWroConfiguration();
     LOG.debug("config attribute: {}", configAttribute);
-    return configAttribute != null ? configAttribute : newWroConfigurationFactory().create();
+    return configAttribute != null ? configAttribute : newWroConfigurationFactory(filterConfig).create();
   }
   
   /**
@@ -165,7 +166,7 @@ public class WroFilter
           mbeanServer.registerMBean(wroConfiguration, name);
         }
       }
-      LOG.info("wro4j configuration: " + wroConfiguration);
+      LOG.info("wro4j configuration: {}", wroConfiguration);
     } catch (final JMException e) {
       LOG.error("Exception occured while registering MBean", e);
     }
@@ -238,15 +239,7 @@ public class WroFilter
    * Initialize header values.
    */
   private void initHeaderValues() {
-    // put defaults
-    if (!wroConfiguration.isDebug()) {
-      final Long timestamp = new Date().getTime();
-      final Calendar cal = Calendar.getInstance();
-      cal.roll(Calendar.YEAR, 1);
-      headersMap.put(HttpHeader.CACHE_CONTROL.toString(), DEFAULT_CACHE_CONTROL_VALUE);
-      headersMap.put(HttpHeader.LAST_MODIFIED.toString(), WroUtil.toDateAsString(timestamp));
-      headersMap.put(HttpHeader.EXPIRES.toString(), WroUtil.toDateAsString(cal.getTimeInMillis()));
-    }
+    configureDefaultHeaders(headersMap);
     final String headerParam = wroConfiguration.getHeader();
     if (!StringUtils.isEmpty(headerParam)) {
       try {
@@ -266,6 +259,24 @@ public class WroFilter
       }
     }
     LOG.debug("Header Values: {}", headersMap);
+  }
+
+  /**
+   * Allow configuration of default headers. This is useful when you need to set custom expires headers.
+   * 
+   * @param map
+   *          the {@link Map} where key represents the header name, and value - header value.
+   */
+  protected void configureDefaultHeaders(final Map<String, String> map) {
+    // put defaults
+    if (!wroConfiguration.isDebug()) {
+      final Long timestamp = new Date().getTime();
+      final Calendar cal = Calendar.getInstance();
+      cal.roll(Calendar.YEAR, 1);
+      map.put(HttpHeader.CACHE_CONTROL.toString(), DEFAULT_CACHE_CONTROL_VALUE);
+      map.put(HttpHeader.LAST_MODIFIED.toString(), WroUtil.toDateAsString(timestamp));
+      map.put(HttpHeader.EXPIRES.toString(), WroUtil.toDateAsString(cal.getTimeInMillis()));
+    }
   }
 
   /**
@@ -298,23 +309,38 @@ public class WroFilter
       throws IOException, ServletException {
     final HttpServletRequest request = (HttpServletRequest) req;
     final HttpServletResponse response = (HttpServletResponse) res;
-    try {
-      // add request, response & servletContext to thread local
-      Context.set(Context.webContext(request, response, filterConfig), wroConfiguration);
-      
-      if (!handledWithRequestHandler(request, response)) {
-        processRequest(request, response);
-        onRequestProcessed();
+
+    //prevent StackOverflowError by skipping the already included wro request
+    if (!DispatcherStreamLocator.isIncludedRequest(request)) {
+      try {
+        // add request, response & servletContext to thread local
+        Context.set(Context.webContext(request, response, filterConfig), wroConfiguration);
+        
+        if (!handledWithRequestHandler(request, response)) {
+          processRequest(request, response);
+          onRequestProcessed();
+        }
+        onProcessComplete();
+      } catch (final Exception e) {
+        onException(e, response, chain);
+      } finally {
+        Context.unset();
       }
-    } catch (final Exception e) {
-      onException(e, response, chain);
-    } finally {
-      // Destroy the cached model after the processing is done if cache flag is disabled
-      if (getConfiguration().isDisableCache()) {
-        LOG.debug("Disable Cache is true. Destroying model...");
-        this.wroManagerFactory.create().getModelFactory().destroy();
-      }
-      Context.unset();
+    } else {
+      chain.doFilter(request, response);
+    }
+  }
+
+  /**
+   * clear the cache if the {@link WroConfiguration#isDisableCache()} flag is set to true.
+   */
+  private void onProcessComplete() {
+    // Destroy the cached model after the processing is done if cache flag is disabled
+    if (wroConfiguration.isDisableCache()) {
+      LOG.debug("Disable Cache is true. Destroying model...");
+      final WroManager manager = this.wroManagerFactory.create();
+      manager.getModelFactory().destroy();
+      manager.getCacheStrategy().clear();
     }
   }
 
@@ -355,9 +381,7 @@ public class WroFilter
       throws ServletException, IOException {
     setResponseHeaders(response);
     // process the uri using manager
-    final WroManager manager = wroManagerFactory.create();
-    // getInjector().inject(manager);
-    manager.process();
+    wroManagerFactory.create().process();
   }
 
   /**
@@ -368,7 +392,7 @@ public class WroFilter
    *          {@link Exception} thrown during request processing.
    */
   protected void onException(final Exception e, final HttpServletResponse response, final FilterChain chain) {
-    RuntimeException re = e instanceof RuntimeException ? (RuntimeException) e : new WroRuntimeException(
+    final RuntimeException re = e instanceof RuntimeException ? (RuntimeException) e : new WroRuntimeException(
         "Unexected exception", e);
     onRuntimeException(re, response, chain);
   }
@@ -384,13 +408,13 @@ public class WroFilter
   @Deprecated
   protected void onRuntimeException(final RuntimeException e, final HttpServletResponse response,
       final FilterChain chain) {
-    LOG.debug("RuntimeException occured", e);
+    LOG.debug("Exception occured", e);
     try {
       LOG.debug("Cannot process. Proceeding with chain execution.");
       chain.doFilter(Context.get().getRequest(), response);
     } catch (final Exception ex) {
       // should never happen
-      LOG.error("Error while chaining the request: " + HttpServletResponse.SC_NOT_FOUND);
+      LOG.error("Error while chaining the request",  e);
     }
   }
 
