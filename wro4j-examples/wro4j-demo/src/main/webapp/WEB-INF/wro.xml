@@ -8,4 +8,9 @@
   <group name="application">
     <css>/assets/stylesheets/application.css</css>
   </group>
+  
+  <group name="dwr">
+    <js>/dwr/engine.js</js>
+    <js>/dwr/interface/DWRFacade.js</js>
+  </group>
 </groups>
