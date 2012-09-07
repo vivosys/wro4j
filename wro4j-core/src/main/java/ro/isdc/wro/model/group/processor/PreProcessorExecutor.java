@@ -15,6 +15,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.input.AutoCloseInputStream;
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -214,10 +215,10 @@ public class PreProcessorExecutor {
    */
   private String getResourceContent(final Resource resource)
       throws IOException {
+    InputStream is = null; 
     try {
-      final InputStream is = new BOMInputStream(uriLocatorFactory.locate(resource.getUri()));
+      is = new BOMInputStream(uriLocatorFactory.locate(resource.getUri()));
       final String result = IOUtils.toString(is, config.getEncoding());
-      is.close();
       if (StringUtils.isEmpty(result)) {
         LOG.debug("Empty resource detected: {}", resource.getUri());
       }
@@ -230,6 +231,8 @@ public class PreProcessorExecutor {
         LOG.error("Cannot ignore missing resource:  {}", resource);
         throw e;
       }
+    } finally {
+      IOUtils.closeQuietly(is);
     }
   }
 }
