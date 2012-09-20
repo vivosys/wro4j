@@ -39,7 +39,7 @@
         <plugin>
         <groupId>ro.isdc.wro4j</groupId>
         <artifactId>wro4j-maven-plugin</artifactId>
-        <version>1.4.10-SNAPSHOT</version>
+        <version>1.4.9</version>
         <executions>
           <execution>
             <goals>
@@ -48,7 +48,10 @@
           </execution>
         </executions>
         <configuration>
-           <wroManagerFactory>ro.isdc.wro.maven.plugin.manager.factory.ConfigurableWroManagerFactory</wroManagerFactory>              
+         <wroManagerFactory>ro.isdc.wro.examples.manager.CustomWroManagerFactory</wroManagerFactory>
+            <!--  
+           <wroManagerFactory>ro.isdc.wro.maven.plugin.manager.factory.ConfigurableWroManagerFactory</wroManagerFactory>
+           -->              
         </configuration>
         
       </plugin>
