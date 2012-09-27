@@ -15,6 +15,7 @@ import ro.isdc.wro.config.ReadOnlyContext;
 import ro.isdc.wro.model.group.Inject;
 import ro.isdc.wro.model.group.processor.GroupsProcessor;
 import ro.isdc.wro.model.group.processor.Injector;
+import ro.isdc.wro.model.resource.support.MutableResourceAuthorizationManager;
 import ro.isdc.wro.model.resource.support.ResourceAuthorizationManager;
 import ro.isdc.wro.model.resource.support.ResourceWatcher;
 import ro.isdc.wro.model.resource.support.hash.HashStrategy;
@@ -150,14 +151,17 @@ public class DefaultSynchronizedCacheStrategyDecorator
    * @return true if the provided key should be checked for change. 
    */
   private boolean shouldWatchForChange(final CacheEntry key) {
-    LOG.debug("shouldWatchForChange");
-    return getResourceWatcherUpdatePeriod() > 0 && !checkedKeys.contains(key);
+    final boolean result = getResourceWatcherUpdatePeriod() > 0 && !checkedKeys.contains(key);
+    LOG.debug("shouldWatchForChange: {}", result);
+    return result;
   }
 
   @Override
   public void clear() {
     super.clear();
     // reset authorization manager (clear any stored uri's).
-    authorizationManager.clear();
+    if (authorizationManager instanceof MutableResourceAuthorizationManager) {
+      ((MutableResourceAuthorizationManager) authorizationManager).clear();      
+    }
   }
 }

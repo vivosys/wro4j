@@ -79,7 +79,7 @@ public class GroupsProcessor {
       final String result = preProcessorExecutor.processAndMerge(filteredGroup.getResources(), cacheKey.isMinimize());
       return doPostProcess(result, cacheKey);
     } catch (final IOException e) {
-      throw new WroRuntimeException("Exception while merging resources", e);
+      throw new WroRuntimeException("Exception while merging resources: " + e.getMessage(), e).logError();
     } finally {
       callbackRegistry.onProcessingComplete();
     }
@@ -142,7 +142,7 @@ public class GroupsProcessor {
    * @return a decorated postProcessor.
    */
   private ResourcePostProcessor decorateProcessor(final ResourcePostProcessor processor) {
-    ResourcePostProcessor decorated = new ExceptionHandlingProcessorDecorator(processor);
+    final ResourcePostProcessor decorated = new ExceptionHandlingProcessorDecorator(processor);
     injector.inject(decorated);
     return decorated;
   }

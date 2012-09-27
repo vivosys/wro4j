@@ -27,6 +27,8 @@ import ro.isdc.wro.model.resource.locator.factory.DefaultUriLocatorFactory;
 import ro.isdc.wro.model.resource.locator.factory.UriLocatorFactory;
 import ro.isdc.wro.model.resource.processor.factory.DefaultProcesorsFactory;
 import ro.isdc.wro.model.resource.processor.factory.ProcessorsFactory;
+import ro.isdc.wro.model.resource.support.DefaultResourceAuthorizationManager;
+import ro.isdc.wro.model.resource.support.ResourceAuthorizationManager;
 import ro.isdc.wro.model.resource.support.hash.HashStrategy;
 import ro.isdc.wro.model.resource.support.hash.SHA1HashStrategy;
 import ro.isdc.wro.model.resource.support.naming.NamingStrategy;
@@ -58,6 +60,7 @@ public class BaseWroManagerFactory
   private UriLocatorFactory uriLocatorFactory;
   private ProcessorsFactory processorsFactory;
   private NamingStrategy namingStrategy;
+  private ResourceAuthorizationManager authorizationManager;
   /**
    * Handles the lazy synchronized creation of the manager
    */
@@ -90,6 +93,9 @@ public class BaseWroManagerFactory
       if (namingStrategy == null) {
         namingStrategy = newNamingStrategy();
       }
+      if (authorizationManager == null) {
+        authorizationManager = newAuthorizationManager();
+      }
       
       manager.setGroupExtractor(groupExtractor);
       manager.setCacheStrategy(cacheStrategy);
@@ -99,6 +105,7 @@ public class BaseWroManagerFactory
       manager.setNamingStrategy(namingStrategy);
       manager.setModelFactory(modelFactory);
       manager.setModelTransformers(modelTransformers);
+      manager.setResourceAuthorizationManager(authorizationManager);
       
       // initialize before injection to allow injector do its job properly
       onAfterInitializeManager(manager);
@@ -106,7 +113,7 @@ public class BaseWroManagerFactory
       return manager;
     }
   };
-  
+
   /**
    * Creates default singleton instance of manager, by initializing manager dependencies with default values
    * (processors).
@@ -115,6 +122,13 @@ public class BaseWroManagerFactory
     return managerInitializer.get();
   }
   
+  /**
+   * @return default implementation of {@link ResourceAuthorizationManager}.
+   */
+  protected ResourceAuthorizationManager newAuthorizationManager() {
+    return new DefaultResourceAuthorizationManager();
+  }
+
   /**
    * Allows factory to do additional manager configuration after it was initialzed. One use-case is to configure
    * callbacks. Default implementation does nothing. Do not set anything else except callbacks in this method, otherwise
@@ -199,8 +213,6 @@ public class BaseWroManagerFactory
   public void onModelPeriodChanged(final long period) {
     try {
       managerInitializer.get().onModelPeriodChanged(period);
-      // update cache too.
-      managerInitializer.get().getCacheStrategy().clear();
     } catch (final WroRuntimeException e) {
       LOG.warn("[FAIL] Unable to reload model, probably because invoked outside of context");
     }
@@ -327,6 +339,12 @@ public class BaseWroManagerFactory
     return modelFactory;
   }
   
+  
+  public BaseWroManagerFactory setResourceAuthorizationManager(final ResourceAuthorizationManager authorizationManager) {
+    this.authorizationManager = authorizationManager;
+    return this;
+  }
+
   /**
    * {@inheritDoc}
    */

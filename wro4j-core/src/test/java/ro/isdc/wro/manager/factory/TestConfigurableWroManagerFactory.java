@@ -24,6 +24,9 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import ro.isdc.wro.WroRuntimeException;
+import ro.isdc.wro.cache.CacheStrategy;
+import ro.isdc.wro.cache.ConfigurableCacheStrategy;
+import ro.isdc.wro.cache.impl.MemoryCacheStrategy;
 import ro.isdc.wro.config.Context;
 import ro.isdc.wro.manager.WroManager;
 import ro.isdc.wro.model.resource.locator.ClasspathUriLocator;
@@ -339,6 +342,47 @@ public class TestConfigurableWroManagerFactory {
     Assert.assertEquals(MD5HashStrategy.class, actual.getClass());
   }
 
+  @Test(expected = WroRuntimeException.class)
+  public void cannotConfigureInvalidCacheStrategy() throws Exception {
+    final Properties configProperties = new Properties();
+    configProperties.setProperty(ConfigurableCacheStrategy.KEY, "INVALID");
+    victim.setConfigProperties(configProperties);
+    victim.create().getCacheStrategy().clear();
+  }
+  
+  @Test
+  public void shouldUseConfiguredCacheStrategy() throws Exception {
+    final Properties configProperties = new Properties();
+    configProperties.setProperty(ConfigurableCacheStrategy.KEY, MemoryCacheStrategy.ALIAS);
+    victim.setConfigProperties(configProperties);
+    final CacheStrategy<?, ?> actual = ((ConfigurableCacheStrategy) victim.create().getCacheStrategy()).getConfiguredStrategy();
+    Assert.assertEquals(MemoryCacheStrategy.class, actual.getClass());
+  }
+
+  /**
+   * TODO Implement
+   */
+  @Test(expected = WroRuntimeException.class)
+  public void cannotConfigureInvalidRequestHandler() throws Exception {
+    final Properties configProperties = new Properties();
+    configProperties.setProperty(ConfigurableCacheStrategy.KEY, "INVALID");
+    victim.setConfigProperties(configProperties);
+    victim.create().getCacheStrategy().clear();
+  }
+  
+  /**
+   * TODO Implement
+   */
+  @Test
+  public void shouldUseConfiguredRequestHandler() throws Exception {
+    final Properties configProperties = new Properties();
+    configProperties.setProperty(ConfigurableCacheStrategy.KEY, MemoryCacheStrategy.ALIAS);
+    victim.setConfigProperties(configProperties);
+    final CacheStrategy<?, ?> actual = ((ConfigurableCacheStrategy) victim.create().getCacheStrategy()).getConfiguredStrategy();
+    Assert.assertEquals(MemoryCacheStrategy.class, actual.getClass());
+  }
+
+  
   @Test
   public void shouldConsiderContributeMethodsWhenManagerFactoryIsExtended() {
     final String alias = "contributed";

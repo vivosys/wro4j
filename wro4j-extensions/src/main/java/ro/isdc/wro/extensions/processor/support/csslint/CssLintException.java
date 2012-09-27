@@ -14,6 +14,7 @@ import java.util.Collections;
  * @since 1.3.8
  * @created 19 Jun 2011
  */
+@SuppressWarnings("serial")
 public class CssLintException extends Exception {
   private Collection<CssLintError> errors;
 
@@ -22,7 +23,7 @@ public class CssLintException extends Exception {
    */
   public Collection<CssLintError> getErrors() {
     if (errors == null) {
-      return Collections.EMPTY_LIST;
+      return Collections.emptyList();
     }
     return this.errors;
   }
