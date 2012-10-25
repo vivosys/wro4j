@@ -40,9 +40,9 @@ public class CssLintProcessor
   private static final Logger LOG = LoggerFactory.getLogger(CssLintProcessor.class);
   public static final String ALIAS = "cssLint";
   /**
-   * Options to use to configure jsHint.
+   * CSV Options.
    */
-  private String[] options;
+  private String options;
 
   private ObjectPoolHelper<CssLint> enginePool;
 
@@ -55,14 +55,6 @@ public class CssLintProcessor
     });
   }
 
-
-
-  public CssLintProcessor setOptions(final String... options) {
-    this.options = options;
-    return this;
-  }
-
-
   /**
    * {@inheritDoc}
    */
@@ -72,14 +64,9 @@ public class CssLintProcessor
     final String content = IOUtils.toString(reader);
     final CssLint cssLint = enginePool.getObject();
     try {
-      cssLint.setOptions(options).validate(content);
+      cssLint.setOptions(getOptions()).validate(content);
     } catch (final CssLintException e) {
-      try {
-        LOG.error("The following resource: " + resource + " has " + e.getErrors().size() + " errors.", e);
-        onCssLintException(e, resource);
-      } catch (final Exception ex) {
-        throw WroRuntimeException.wrap(ex);
-      }
+      onCssLintException(e, resource);
     } catch (final WroRuntimeException e) {
       final String resourceUri = resource == null ? StringUtils.EMPTY : "[" + resource.getUri() + "]";
       LOG.error("Exception while applying " + ALIAS + " processor on the " + resourceUri
@@ -100,8 +87,6 @@ public class CssLintProcessor
   protected void onException(final WroRuntimeException e) {
     throw e;
   }
-
-
 
   /**
    * @return {@link CssLint} instance.
@@ -126,7 +111,43 @@ public class CssLintProcessor
    * @param e {@link CssLintException} which has occurred.
    * @param resource the processed resource which caused the exception.
    */
-  protected void onCssLintException(final CssLintException e, final Resource resource) throws Exception {
+  protected void onCssLintException(final CssLintException e, final Resource resource) {
     LOG.error("The following resource: " + resource + " has " + e.getErrors().size() + " errors.", e);
+  }
+
+  /**
+   * @param options a CSV representation of options.
+   */
+  public CssLintProcessor setOptionsAsString(final String options) {
+    this.options = options;
+    return this;
+  }
+
+  /**
+   * Sets an array of options.
+   * Use {@link #setOptionsAsString(String)} instead.
+   */
+  @Deprecated
+  public CssLintProcessor setOptions(final String... options) {
+    this.options = StringUtils.join(options, ',');
+    LOG.debug("setOptions: {}", this.options);
+    return this;
+  }
+
+  /**
+   * @return an options as CSV.
+   */
+  private String getOptions() {
+    if (options == null) {
+      options = createDefaultOptions();
+    }
+    return options;
+  }
+
+  /**
+   * @return default options to use for linting.
+   */
+  protected String createDefaultOptions() {
+    return "";
   }
 }

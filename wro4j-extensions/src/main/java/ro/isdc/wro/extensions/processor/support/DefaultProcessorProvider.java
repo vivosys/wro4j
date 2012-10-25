@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 
 import ro.isdc.wro.extensions.processor.css.BourbonCssProcessor;
 import ro.isdc.wro.extensions.processor.css.CssLintProcessor;
+import ro.isdc.wro.extensions.processor.css.Less4jProcessor;
 import ro.isdc.wro.extensions.processor.css.LessCssProcessor;
 import ro.isdc.wro.extensions.processor.css.NodeLessCssProcessor;
 import ro.isdc.wro.extensions.processor.css.RhinoLessCssProcessor;
@@ -23,9 +24,11 @@ import ro.isdc.wro.extensions.processor.js.HoganJsProcessor;
 import ro.isdc.wro.extensions.processor.js.JsHintProcessor;
 import ro.isdc.wro.extensions.processor.js.JsLintProcessor;
 import ro.isdc.wro.extensions.processor.js.JsonHPackProcessor;
+import ro.isdc.wro.extensions.processor.js.NodeCoffeeScriptProcessor;
 import ro.isdc.wro.extensions.processor.js.PackerJsProcessor;
+import ro.isdc.wro.extensions.processor.js.RhinoCoffeeScriptProcessor;
+import ro.isdc.wro.extensions.processor.js.TypeScriptProcessor;
 import ro.isdc.wro.extensions.processor.js.UglifyJsProcessor;
-import ro.isdc.wro.extensions.processor.js.YUIJsCompressorProcessor;
 import ro.isdc.wro.model.resource.processor.ResourcePostProcessor;
 import ro.isdc.wro.model.resource.processor.ResourcePreProcessor;
 import ro.isdc.wro.model.resource.processor.decorator.LazyProcessorDecorator;
@@ -38,7 +41,7 @@ import com.google.javascript.jscomp.CompilationLevel;
 
 /**
  * The implementation which contributes with processors from core module.
- * 
+ *
  * @author Alex Objelean
  * @created 1 Jun 2012
  */
@@ -51,7 +54,7 @@ public class DefaultProcessorProvider
   public Map<String, ResourcePreProcessor> providePreProcessors() {
     return createMap();
   }
-  
+
   /**
    * {@inheritDoc}
    */
@@ -63,12 +66,12 @@ public class DefaultProcessorProvider
      * interfaces which will be resolved in next major version.
      */
     final Map<String, ResourcePreProcessor> preProcessorsMap = createMap();
-    for (Entry<String, ResourcePreProcessor> entry : preProcessorsMap.entrySet()) {
+    for (final Entry<String, ResourcePreProcessor> entry : preProcessorsMap.entrySet()) {
       resultMap.put(entry.getKey(), new ProcessorDecorator(entry.getValue()));
     }
     return resultMap;
   }
-  
+
   /**
    * @return the map of pre processors.
    */
@@ -80,20 +83,6 @@ public class DefaultProcessorProvider
         return new YUICssCompressorProcessor();
       }
     }));
-    map.put(YUIJsCompressorProcessor.ALIAS_NO_MUNGE, new LazyProcessorDecorator(
-        new LazyInitializer<ResourcePreProcessor>() {
-          @Override
-          protected ResourcePreProcessor initialize() {
-            return YUIJsCompressorProcessor.noMungeCompressor();
-          }
-        }));
-    map.put(YUIJsCompressorProcessor.ALIAS_MUNGE, new LazyProcessorDecorator(
-        new LazyInitializer<ResourcePreProcessor>() {
-          @Override
-          protected ResourcePreProcessor initialize() {
-            return YUIJsCompressorProcessor.doMungeCompressor();
-          }
-        }));
     map.put(DojoShrinksafeCompressorProcessor.ALIAS, new LazyProcessorDecorator(
         new LazyInitializer<ResourcePreProcessor>() {
           @Override
@@ -129,6 +118,12 @@ public class DefaultProcessorProvider
       @Override
       protected ResourcePreProcessor initialize() {
         return new NodeLessCssProcessor();
+      }
+    }));
+    map.put(Less4jProcessor.ALIAS, new LazyProcessorDecorator(new LazyInitializer<ResourcePreProcessor>() {
+      @Override
+      protected ResourcePreProcessor initialize() {
+        return new Less4jProcessor();
       }
     }));
     map.put(LessCssProcessor.ALIAS, new LazyProcessorDecorator(new LazyInitializer<ResourcePreProcessor>() {
@@ -169,6 +164,18 @@ public class DefaultProcessorProvider
             return new GoogleClosureCompressorProcessor(CompilationLevel.ADVANCED_OPTIMIZATIONS);
           }
         }));
+    map.put(RhinoCoffeeScriptProcessor.ALIAS, new LazyProcessorDecorator(new LazyInitializer<ResourcePreProcessor>() {
+      @Override
+      protected ResourcePreProcessor initialize() {
+        return new RhinoCoffeeScriptProcessor();
+      }
+    }));
+    map.put(NodeCoffeeScriptProcessor.ALIAS, new LazyProcessorDecorator(new LazyInitializer<ResourcePreProcessor>() {
+      @Override
+      protected ResourcePreProcessor initialize() {
+        return new NodeCoffeeScriptProcessor();
+      }
+    }));
     map.put(CoffeeScriptProcessor.ALIAS, new LazyProcessorDecorator(new LazyInitializer<ResourcePreProcessor>() {
       @Override
       protected ResourcePreProcessor initialize() {
@@ -233,6 +240,12 @@ public class DefaultProcessorProvider
       @Override
       protected ResourcePreProcessor initialize() {
         return new HandlebarsJsProcessor();
+      }
+    }));
+    map.put(TypeScriptProcessor.ALIAS, new LazyProcessorDecorator(new LazyInitializer<ResourcePreProcessor>() {
+      @Override
+      protected ResourcePreProcessor initialize() {
+        return new TypeScriptProcessor();
       }
     }));
     return map;

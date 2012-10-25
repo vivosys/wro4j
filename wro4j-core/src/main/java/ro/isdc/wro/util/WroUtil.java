@@ -38,7 +38,7 @@ import ro.isdc.wro.model.resource.processor.ResourcePreProcessor;
 
 /**
  * Utility class.
- * 
+ *
  * @author Alex Objelean
  * @created Created on Nov 13, 2008
  */
@@ -47,8 +47,7 @@ public final class WroUtil {
   /**
    * Empty line pattern.
    */
-  public static final Pattern EMTPY_LINE_PATTERN = Pattern.compile(loadRegexpWithKey("emptyLine"),
-      Pattern.MULTILINE);
+  public static final Pattern EMTPY_LINE_PATTERN = Pattern.compile(loadRegexpWithKey("emptyLine"), Pattern.MULTILINE);
   /**
    * Thread safe date format used to transform milliseconds into date as string to put in response header.
    */
@@ -81,7 +80,7 @@ public final class WroUtil {
 
   /**
    * Transforms milliseconds into date format for response header of this form: Sat, 10 Apr 2010 17:31:31 GMT.
-   * 
+   *
    * @param milliseconds
    *          to transform
    * @return string representation of the date.
@@ -92,7 +91,7 @@ public final class WroUtil {
 
   /**
    * Retrieve pathInfo from a given location.
-   * 
+   *
    * @param request
    * @param location
    *          where to search contextPath.
@@ -127,7 +126,7 @@ public final class WroUtil {
    * <code>null</code>s are handled without exceptions. Two <code>null</code> references are considered to be equal. The
    * comparison is case insensitive.
    * </p>
-   * 
+   *
    * <pre>
    * StringUtils.startsWithIgnoreCase(null, null)      = true
    * StringUtils.startsWithIgnoreCase(null, "abcdef")  = false
@@ -135,7 +134,7 @@ public final class WroUtil {
    * StringUtils.startsWithIgnoreCase("abc", "abcdef") = true
    * StringUtils.startsWithIgnoreCase("abc", "ABCDEF") = true
    * </pre>
-   * 
+   *
    * @see java.lang.String#startsWith(String)
    * @param str
    *          the String to check, may be null
@@ -150,7 +149,7 @@ public final class WroUtil {
 
   /**
    * Creates a folder like implementation for a class. Ex: com.mycompany.MyClass -> com/mycompany/
-   * 
+   *
    * @param clazz
    *          used as a base location for determining the package path.
    * @return a string representation of the path where the class resides.
@@ -164,7 +163,7 @@ public final class WroUtil {
    * <p>
    * Check if a String starts with a specified prefix (optionally case insensitive).
    * </p>
-   * 
+   *
    * @see java.lang.String#startsWith(String)
    * @param str
    *          the String to check, may be null
@@ -186,7 +185,7 @@ public final class WroUtil {
 
   /**
    * Retrieve servletPath from a given location.
-   * 
+   *
    * @param location
    *          where to search the servletPath.
    * @return ServletPath string value.
@@ -198,7 +197,7 @@ public final class WroUtil {
   /**
    * Analyze headers of the request and searches for mangled (by proxy) for "Accept-Encoding" header and its mangled
    * variations and gzip header value and its mangled variations.
-   * 
+   *
    * @return true if this request support gzip encoding.
    */
   @SuppressWarnings("unchecked")
@@ -223,34 +222,36 @@ public final class WroUtil {
   /**
    * Transforms a java multi-line string into javascript multi-line string. This technique was found at {@link http
    * ://stackoverflow.com/questions/805107/multiline-strings-in-javascript/}
-   * 
+   *
    * @param data
    *          a string containing new lines.
    * @return a string which being evaluated on the client-side will be treated as a correct multi-line string.
    */
   public static String toJSMultiLineString(final String data) {
-    final String[] lines = data.split("\n");
     final StringBuffer result = new StringBuffer("[");
-    if (lines.length == 0) {
-      result.append("\"\"");
-    }
-    for (int i = 0; i < lines.length; i++) {
-      final String line = lines[i];
-      result.append("\"");
-      result.append(line.replace("\\", "\\\\").replace("\"", "\\\"").replaceAll("\\r|\\n", ""));
-      // this is used to force a single line to have at least one new line (otherwise cssLint fails).
-      if (lines.length == 1) {
-        result.append("\\n");
+    if (data != null) {
+      final String[] lines = data.split("\n");
+      if (lines.length == 0) {
+        result.append("\"\"");
       }
-      result.append("\"");
-      if (i < lines.length - 1) {
-        result.append(",");
+      for (int i = 0; i < lines.length; i++) {
+        final String line = lines[i];
+        result.append("\"");
+        result.append(line.replace("\\", "\\\\").replace("\"", "\\\"").replaceAll("\\r|\\n", ""));
+        // this is used to force a single line to have at least one new line (otherwise cssLint fails).
+        if (lines.length == 1) {
+          result.append("\\n");
+        }
+        result.append("\"");
+        if (i < lines.length - 1) {
+          result.append(",");
+        }
       }
     }
     result.append("].join(\"\\n\")");
     return result.toString();
   }
-  
+
   /**
    * Utility used to verify that requestURI matches provided path
    */
@@ -265,7 +266,7 @@ public final class WroUtil {
 
   /**
    * A factory method for creating a {@link ResourceProcessor} based on provided {@link ResourcePreProcessor}.
-   * 
+   *
    * @param preProcessor
    *          {@link ResourcePreProcessor} to use as a {@link ResourceProcessor}.
    * @return instance of {@link ResourceProcessor}.
@@ -282,7 +283,7 @@ public final class WroUtil {
 
   /**
    * A simple way to create a {@link WroModelFactory}.
-   * 
+   *
    * @param model
    *          {@link WroModel} instance to be returned by the factory.
    */
@@ -291,7 +292,7 @@ public final class WroUtil {
       public WroModel create() {
         return model;
       }
-      
+
       public void destroy() {
       }
     };
@@ -307,7 +308,7 @@ public final class WroUtil {
 
   /**
    * Wraps original exception into {@link WroRuntimeException} and throw it.
-   * 
+   *
    * @param e
    *          the exception to wrap.
    * @deprecated use {@link WroRuntimeException#wrap(Exception)}
@@ -320,10 +321,10 @@ public final class WroUtil {
     }
     throw new WroRuntimeException(e.getMessage(), e);
   }
-  
+
   /**
    * Load the regular expression stored in in regexp.properties resource file.
-   * 
+   *
    * @param key
    *          the key of the regexp to load.
    * @return regular expression value.
@@ -333,7 +334,7 @@ public final class WroUtil {
       final InputStream stream = WroUtil.class.getResourceAsStream("regexp.properties");
       final Properties props = new RegexpProperties().load(stream);
       return props.getProperty(key);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new WroRuntimeException("Could not load pattern with key: " + key + " from property file", e);
     }
   }
@@ -344,13 +345,16 @@ public final class WroUtil {
   public static String getImplementationVersion() {
     return WroUtil.class.getPackage().getImplementationVersion();
   }
-  
+
   /**
    * Copy and close the reader and writer streams.
    *
-   * @param reader The source stream.
-   * @param writer The destination stream.
-   * @throws IOException If content cannot be copy.
+   * @param reader
+   *          The source stream.
+   * @param writer
+   *          The destination stream.
+   * @throws IOException
+   *           If content cannot be copy.
    */
   public static void safeCopy(final Reader reader, final Writer writer)
       throws IOException {
@@ -361,11 +365,26 @@ public final class WroUtil {
       IOUtils.closeQuietly(writer);
     }
   }
-  
+
   /**
-   * @return a generated {@link File} with unique name located in temp folder. 
+   * @return a generated {@link File} with unique name located in temp folder.
    */
   public static File createTempFile() {
-    return new File(FileUtils.getTempDirectory(), "wro4j" + UUID.randomUUID().toString());
+    return createTempFile("temp");
+  }
+
+  /**
+   * Creates a temp file which has a certain extension.
+   * @param extension of the created temp file.
+   */
+  public static File createTempFile(final String extension) {
+    try {
+      final String fileName = String.format("wro4j-%s.%s", UUID.randomUUID().toString(), extension);
+      final File file = new File(FileUtils.getTempDirectory(), fileName);
+      file.createNewFile();
+      return file;
+    } catch (final IOException e) {
+      throw WroRuntimeException.wrap(e);
+    }
   }
 }
