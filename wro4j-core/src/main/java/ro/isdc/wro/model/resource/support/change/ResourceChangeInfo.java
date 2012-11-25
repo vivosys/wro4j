@@ -56,7 +56,10 @@ public final class ResourceChangeInfo {
    * current hash to null. This operation should be invoked after a change cycle completes and a new one is prepared.
    */
   public void reset() {
-    this.prevHash = currentHash;
+    // This is important to avoid false positives when reset is called concurrently.
+    if (currentHash != null) {
+      this.prevHash = currentHash;
+    }
     this.currentHash = null;
   }
 
@@ -70,6 +73,7 @@ public final class ResourceChangeInfo {
     final boolean result = isChangedHash() ? true : !groups.contains(groupName);
     if (result) {
       groups.add(groupName);
+      LOG.debug("ChangeDetails: {}", this);
     }
     final String changedMessage = result ? "[YES]" : "[NO]";
     LOG.debug("{} changed for: {}, ", changedMessage , groupName);

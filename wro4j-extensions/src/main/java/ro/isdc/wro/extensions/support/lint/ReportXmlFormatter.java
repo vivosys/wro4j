@@ -38,7 +38,7 @@ public class ReportXmlFormatter
   /**
    * Lint related constants
    */
-  private static final String ELEMENT_LINT = "lint";
+  private static final String ELEMENT_LINT = "jslint";
   private static final String ELEMENT_ISSUE = "issue";
   private static final String ELEMENT_FILE = "file";
   private static final String ATTR_NAME = "name";
@@ -101,17 +101,17 @@ public class ReportXmlFormatter
       final Function<F, LintItem> adapter) {
     Validate.notNull(lintReport);
     final LintReport<LintItem> report = new LintReport<LintItem>();
-    for (final ResourceLintReport<F> item : lintReport.getReports()) {
-      final Collection<LintItem> lints = new ArrayList<LintItem>();
-      for (final F lint : item.getLints()) {
+    for (final ResourceLintReport<F> reportItem : lintReport.getReports()) {
+      final Collection<LintItem> lintItems = new ArrayList<LintItem>();
+      for (final F lint : reportItem.getLints()) {
         try {
           LOG.debug("Adding lint: {}", lint);
-          lints.add(adapter.apply(lint));
+          lintItems.add(adapter.apply(lint));
         } catch (final Exception e) {
           throw WroRuntimeException.wrap(e, "Problem while adapting lint item");
         }
       }
-      report.addReport(ResourceLintReport.create(item.getResourcePath(), lints));
+      report.addReport(ResourceLintReport.create(reportItem.getResourcePath(), lintItems));
     }
     return new ReportXmlFormatter(report, formatterType);
   }
