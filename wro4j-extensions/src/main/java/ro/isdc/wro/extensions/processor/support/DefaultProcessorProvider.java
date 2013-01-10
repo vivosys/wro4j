@@ -18,6 +18,7 @@ import ro.isdc.wro.extensions.processor.js.CJsonProcessor;
 import ro.isdc.wro.extensions.processor.js.CoffeeScriptProcessor;
 import ro.isdc.wro.extensions.processor.js.DojoShrinksafeCompressorProcessor;
 import ro.isdc.wro.extensions.processor.js.DustJsProcessor;
+import ro.isdc.wro.extensions.processor.js.EmberJsProcessor;
 import ro.isdc.wro.extensions.processor.js.GoogleClosureCompressorProcessor;
 import ro.isdc.wro.extensions.processor.js.HandlebarsJsProcessor;
 import ro.isdc.wro.extensions.processor.js.HoganJsProcessor;
@@ -164,6 +165,13 @@ public class DefaultProcessorProvider
             return new GoogleClosureCompressorProcessor(CompilationLevel.ADVANCED_OPTIMIZATIONS);
           }
         }));
+    map.put(GoogleClosureCompressorProcessor.ALIAS_WHITESPACE_ONLY, new LazyProcessorDecorator(
+        new LazyInitializer<ResourcePreProcessor>() {
+          @Override
+          protected ResourcePreProcessor initialize() {
+            return new GoogleClosureCompressorProcessor(CompilationLevel.WHITESPACE_ONLY);
+          }
+        }));
     map.put(RhinoCoffeeScriptProcessor.ALIAS, new LazyProcessorDecorator(new LazyInitializer<ResourcePreProcessor>() {
       @Override
       protected ResourcePreProcessor initialize() {
@@ -246,6 +254,12 @@ public class DefaultProcessorProvider
       @Override
       protected ResourcePreProcessor initialize() {
         return new TypeScriptProcessor();
+      }
+    }));
+    map.put(EmberJsProcessor.ALIAS, new LazyProcessorDecorator(new LazyInitializer<ResourcePreProcessor>() {
+      @Override
+      protected ResourcePreProcessor initialize() {
+        return new EmberJsProcessor();
       }
     }));
     return map;
