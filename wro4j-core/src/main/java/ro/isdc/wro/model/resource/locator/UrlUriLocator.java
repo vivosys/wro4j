@@ -10,14 +10,13 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLDecoder;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.Validate;
 
 import ro.isdc.wro.config.Context;
-import ro.isdc.wro.config.ReadOnlyContext;
 import ro.isdc.wro.config.jmx.WroConfiguration;
-import ro.isdc.wro.model.group.Inject;
 import ro.isdc.wro.model.resource.locator.support.LocatorProvider;
 import ro.isdc.wro.model.resource.locator.wildcard.WildcardUriLocatorSupport;
 
@@ -34,8 +33,6 @@ public class UrlUriLocator extends WildcardUriLocatorSupport {
    * Alias used to register this locator with {@link LocatorProvider}.
    */
   public static final String ALIAS = "uri";
-  @Inject
-  private ReadOnlyContext context;
   /**
    * {@inheritDoc}
    */
@@ -70,7 +67,7 @@ public class UrlUriLocator extends WildcardUriLocatorSupport {
     if (getWildcardStreamLocator().hasWildcard(uri)) {
       final String fullPath = FilenameUtils.getFullPath(uri);
       final URL url = new URL(fullPath);
-      return getWildcardStreamLocator().locateStream(uri, new File(url.getFile()));
+      return getWildcardStreamLocator().locateStream(uri, new File(URLDecoder.decode(url.getFile(), "UTF-8")));
     }
     final URL url = new URL(uri);
     final URLConnection connection = url.openConnection();
@@ -90,7 +87,7 @@ public class UrlUriLocator extends WildcardUriLocatorSupport {
    * @return connection timeout in milliseconds. By default uses connection timeout from {@link WroConfiguration}.
    */
   private int getConnectionTimeout() {
-    return Context.isContextSet() ? context.getConfig().getConnectionTimeout()
+    return Context.isContextSet() ? Context.get().getConfig().getConnectionTimeout()
         : WroConfiguration.DEFAULT_CONNECTION_TIMEOUT;
   }
 }

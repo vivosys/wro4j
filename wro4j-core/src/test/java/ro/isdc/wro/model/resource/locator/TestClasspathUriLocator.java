@@ -47,7 +47,7 @@ public class TestClasspathUriLocator {
       throws IOException {
     Assert.assertNotNull(uriLocator.locate(createUri(" test.css ")));
   }
-  
+
   @Test(expected = IOException.class)
   public void cannotDetectInexistentResourcesWithWildcard()
       throws IOException {
@@ -78,7 +78,13 @@ public class TestClasspathUriLocator {
       throws IOException {
     uriLocator.locate(createUri("ro/isdc/wro/http/**.css"));
   }
-  
+
+  @Test
+  public void shouldFindWildcardResourcesForFolderContainingSpaces()
+      throws IOException {
+    uriLocator.locate(createUri("test/folder with spaces/**.css"));
+  }
+
   @Test(expected = IOException.class)
   public void shouldNotLocateWildcardResourcesWhenWildcardIsDisabled()
       throws IOException {

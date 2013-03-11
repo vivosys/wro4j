@@ -20,8 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ro.isdc.wro.http.support.RedirectedStreamServletResponseWrapper;
-import ro.isdc.wro.model.group.Inject;
-import ro.isdc.wro.model.group.processor.Injector;
 import ro.isdc.wro.model.resource.locator.UriLocator;
 import ro.isdc.wro.model.resource.locator.UrlUriLocator;
 import ro.isdc.wro.util.WroUtil;
@@ -35,8 +33,6 @@ import ro.isdc.wro.util.WroUtil;
  */
 public class DispatcherStreamLocator {
   private static final Logger LOG = LoggerFactory.getLogger(DispatcherStreamLocator.class);
-  @Inject
-  private Injector injector;
   /**
    * Attribute indicating that the request is included from within a wro request cycle. This is required to prevent
    * {@link StackOverflowError}.
@@ -58,8 +54,10 @@ public class DispatcherStreamLocator {
   public InputStream getInputStream(final HttpServletRequest request, final HttpServletResponse response,
       final String location)
       throws IOException {
-    Validate.notNull(request);
-    Validate.notNull(response);
+    if (request == null || response == null || location == null) {
+      throw new IOException("Cannot get stream for location: " + location
+          + " because either request, response or location is not available");
+    }
 
     // where to write the bytes of the stream
     final ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -122,7 +120,6 @@ public class DispatcherStreamLocator {
         return false;
       };
     };
-    injector.inject(locator);
     return locator;
   }
 
