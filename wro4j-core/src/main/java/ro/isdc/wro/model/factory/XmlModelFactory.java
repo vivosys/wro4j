@@ -3,8 +3,7 @@
  */
 package ro.isdc.wro.model.factory;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -87,6 +86,11 @@ public class XmlModelFactory
    * JS tag used in xml.
    */
   private static final String TAG_JS = "js";
+
+  /**
+   * HTML tag used in xml.
+   */
+  private static final String TAG_HTML = "html";
 
   /**
    * GroupRef tag used in xml.
@@ -352,6 +356,8 @@ public class XmlModelFactory
       type = ResourceType.JS;
     } else if (TAG_CSS.equals(tagName)) {
       type = ResourceType.CSS;
+    } else if (TAG_HTML.equals(tagName)) {
+      type = ResourceType.HTML;
     } else if (TAG_GROUP_REF.equals(tagName)) {
       // uri in this case is the group name
       resources.addAll(getResourcesForGroup(uri));

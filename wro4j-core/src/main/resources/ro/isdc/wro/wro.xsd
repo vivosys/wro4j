@@ -21,12 +21,18 @@
 						use="optional" default="true" />
 				</xsd:complexType>
 			</xsd:element>
-			<xsd:element name="js">
-				<xsd:complexType mixed="true">
-					<xsd:attribute name="minimize" type="xsd:boolean"
-						use="optional" default="true" />
-				</xsd:complexType>
-			</xsd:element>
+      <xsd:element name="js">
+        <xsd:complexType mixed="true">
+          <xsd:attribute name="minimize" type="xsd:boolean"
+                         use="optional" default="true" />
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="html">
+        <xsd:complexType mixed="true">
+          <xsd:attribute name="minimize" type="xsd:boolean"
+                         use="optional" default="true" />
+        </xsd:complexType>
+      </xsd:element>
 			<xsd:element name="group-ref" type="xsd:string" />
 		</xsd:choice>
 		<xsd:attribute name="name" type="xsd:ID" use="required" />

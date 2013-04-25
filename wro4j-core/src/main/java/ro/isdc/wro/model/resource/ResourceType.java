@@ -21,7 +21,14 @@ public enum ResourceType {
     public String getContentType() {
       return "text/javascript";
     }
-  };
+  },
+  HTML {
+    @Override
+    public String getContentType() {
+      return "text/html";
+    }
+  }
+  ;
   /**
    * @return the content type of the resource type.
    */
